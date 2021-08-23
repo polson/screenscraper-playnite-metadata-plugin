@@ -1,0 +1,8 @@
+bin/
+obj/
+./packages/
+riderModule.iml
+/_ReSharper.Caches/
+ScreenScraperMetadata.sln.DotSettings
+.idea/
+ScreenScraperMetadata/packages/

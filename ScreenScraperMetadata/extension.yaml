@@ -1,0 +1,7 @@
+﻿Id: ScreenScraperMetadata_7f06b81a-3271-44ee-a234-b32fc15c42f1
+Name: ScreenScraper.fr Metadata Provider
+Author: polson
+Version: 1.0
+Module: ScreenScraperMetadata.dll
+Type: MetadataProvider
+Icon: Resources\icon.png
