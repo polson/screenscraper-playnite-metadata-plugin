@@ -9,6 +9,37 @@ namespace ScreenScraperMetadata
         private readonly ScreenScraperMetadata plugin;
 
         // Parameterless constructor must exist if you want to use LoadPluginSettings method.
+        public string Username { get; set; } = string.Empty;
+
+        public string RegionPreferences { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
+
+        public bool ShouldUseScreenshots { get; set; }
+
+        public string SelectedBackgroundPreference { get; set; }
+
+        public enum BackgroundPreferenceEnum
+        {
+            Fanart,
+            Screenshot,
+            PreferFanart,
+            PreferScreenshot
+        }
+        
+        public Dictionary<BackgroundPreferenceEnum, string> BackgroundPreferencesWithCaptions { get; } = new()
+            {
+                {BackgroundPreferenceEnum.Fanart, "Fanart"},
+                {BackgroundPreferenceEnum.Screenshot, "Screenshot"},
+                {BackgroundPreferenceEnum.PreferFanart, "Both (Prefer fanart)"},
+                {BackgroundPreferenceEnum.PreferScreenshot, "Both (Prefer screenshot)"}
+            };
+        
+        public BackgroundPreferenceEnum BackgroundPreference
+        {
+            get; set;
+        }
+
         public ScreenScraperMetadataSettings()
         {
         }
@@ -28,15 +59,9 @@ namespace ScreenScraperMetadata
                 RegionPreferences = savedSettings.RegionPreferences;
                 ShouldUseScreenshots = savedSettings.ShouldUseScreenshots;
                 Password = savedSettings.Password;
+                SelectedBackgroundPreference = savedSettings.SelectedBackgroundPreference;
             }
         }
-
-        public string Username { get; set; } = string.Empty;
-
-        public string RegionPreferences { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-
-        public bool ShouldUseScreenshots { get; set; }
 
         public void BeginEdit()
         {

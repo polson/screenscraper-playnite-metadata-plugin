@@ -44,19 +44,39 @@ namespace ScreenScraperMetadata
 
         public override MetadataFile? GetBackgroundImage()
         {
-            var url = FindMediaItem("fanart");
-            if (settings.ShouldUseScreenshots && url == null)
+            var fanartUrls = FindMediaItems("fanart");
+            var screenshotUrls = FindMediaItems("ss").Concat(FindMediaItems("sstitle"));
+            var urls = new List<string>();
+            switch (settings.BackgroundPreference)
             {
-                var imageFileOptions = FindMediaItems("ss")
-                    .Concat(FindMediaItems("sstitle"))
-                    .Select(mediaUrl => new ImageFileOption(mediaUrl))
-                    .ToList();
-                if (!imageFileOptions.HasItems()) return base.GetBackgroundImage();
-                url = options.IsBackgroundDownload || imageFileOptions.Count == 1
-                    ? imageFileOptions.First().Path
-                    : plugin.PlayniteApi.Dialogs.ChooseImageFile(imageFileOptions, "Choose background image")?.Path;
+                case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.Fanart:
+                    urls.AddRange(fanartUrls);
+                    break;
+                case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.Screenshot:
+                {
+                    urls.AddRange(screenshotUrls);
+                    break;
+                }
+                case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.PreferFanart:
+                    urls.AddRange(fanartUrls.Concat(screenshotUrls));
+                    break;
+                case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.PreferScreenshot:
+                    urls.AddRange(screenshotUrls.Concat(fanartUrls));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
+            string? url = null;
+            if (options.IsBackgroundDownload || urls.Count <= 1)
+            {
+                url = urls.FirstOrDefault();
+            }
+            else
+            {
+                var imageFileOptions =  urls.Select(mediaUrl => new ImageFileOption(mediaUrl)).ToList();
+                url = plugin.PlayniteApi.Dialogs.ChooseImageFile(imageFileOptions, "Choose background image")?.Path;
+            }
             return url != null ? new MetadataFile(url) : base.GetBackgroundImage();
         }
 
@@ -252,6 +272,7 @@ namespace ScreenScraperMetadata
                         type.Equals(item.type)
                         && (region.Equals(item.region) || item.region == null)
                     ))
+                .Distinct()
                 .FirstOrDefault(mediaItem => mediaItem != null);
             return found?.url ?? ssGameInfo?.medias.Find(item => type.Equals(item.type))?.url;
         }
@@ -264,7 +285,8 @@ namespace ScreenScraperMetadata
                         && (region.Equals(item.region) || item.region == null)
                     ))
                 .Where(item => item != null)
-                .Select(item => item!.url);
+                .Select(item => item!.url)
+                .Distinct();
         }
 
         private bool HasRomFile()
