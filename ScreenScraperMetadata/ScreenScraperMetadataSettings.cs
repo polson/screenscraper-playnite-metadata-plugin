@@ -18,6 +18,8 @@ namespace ScreenScraperMetadata
         public bool ShouldUseScreenshots { get; set; }
 
         public string SelectedBackgroundPreference { get; set; }
+        
+        public bool ShouldUseGameLogosAsIcon { get; set; }
 
         public enum BackgroundPreferenceEnum
         {

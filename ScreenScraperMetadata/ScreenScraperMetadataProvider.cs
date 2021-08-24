@@ -111,6 +111,10 @@ namespace ScreenScraperMetadata
 
         public override MetadataFile? GetIcon()
         {
+            if (!settings.ShouldUseGameLogosAsIcon)
+            {
+                return null;
+            }
             var url = FindMediaItem("wheel") ?? FindMediaItem("wheel-hd");
             return url != null ? new MetadataFile(url) : null;
         }
@@ -188,25 +192,46 @@ namespace ScreenScraperMetadata
             if (ssGameInfo == null) return metadataFields;
 
             metadataFields.Add(MetadataField.Name);
-            if (ssGameInfo.genres?.HasItems() == true) metadataFields.Add(MetadataField.Genres);
+            if (ssGameInfo.genres?.HasItems() == true)
+            {
+                metadataFields.Add(MetadataField.Genres);
+            }
 
-            if (ssGameInfo.dates?.HasItems() == true) metadataFields.Add(MetadataField.ReleaseDate);
+            if (ssGameInfo.dates?.HasItems() == true)
+            {
+                metadataFields.Add(MetadataField.ReleaseDate);
+            }
 
-            if (ssGameInfo.developpeur != null) metadataFields.Add(MetadataField.Developers);
+            if (ssGameInfo.developpeur != null)
+            {
+                metadataFields.Add(MetadataField.Developers);
+            }
 
-            if (ssGameInfo.editeur != null) metadataFields.Add(MetadataField.Publishers);
+            if (ssGameInfo.editeur != null)
+            {
+                metadataFields.Add(MetadataField.Publishers);
+            }
 
-            if (ssGameInfo.synopsis?.HasItems() == true) metadataFields.Add(MetadataField.Description);
+            if (ssGameInfo.synopsis?.HasItems() == true)
+            {
+                metadataFields.Add(MetadataField.Description);
+            }
 
             if (ssGameInfo.medias.HasItems())
             {
                 metadataFields.Add(MetadataField.CoverImage);
                 metadataFields.Add(MetadataField.BackgroundImage);
-                metadataFields.Add(MetadataField.Icon);
+                if (settings.ShouldUseGameLogosAsIcon)
+                {
+                    metadataFields.Add(MetadataField.Icon);
+                }
             }
 
-            if (ssGameInfo.classifications?.HasItems() == true) metadataFields.Add(MetadataField.AgeRating);
-
+            if (ssGameInfo.classifications?.HasItems() == true)
+            {
+                metadataFields.Add(MetadataField.AgeRating);
+            }
+            
             metadataFields.Add(MetadataField.Platform);
 
             return metadataFields;
