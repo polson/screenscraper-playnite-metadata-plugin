@@ -37,10 +37,12 @@ namespace ScreenScraperMetadata.Services
                 .AddParameter("romnom", gameInfo.GetRomFileName() ?? gameInfo.Name)
                 .AddParameter("romtaille", gameInfo.GetRomFileSize());
 
-            systemNameToIdMap.TryGetValue(gameInfo.Platform.Name, out var systemId);
-
-            if (systemId != null) request.AddParameter("systemeid", systemId);
-
+            if (gameInfo.Platform != null)
+            {
+                systemNameToIdMap.TryGetValue(gameInfo.Platform.Name, out var systemId);
+                if (systemId != null) request.AddParameter("systemeid", systemId);
+            }
+            
             if (gameInfo.HasRomFile())
             {
                 request.AddParameter("romtype", "rom");
@@ -183,7 +185,6 @@ namespace ScreenScraperMetadata.Services
 
         public static long GetRomFileSize(this Game gameInfo)
         {
-            LogManager.GetLogger().Info(">> GETTING ROM FILE SIZE FOR: " + gameInfo.GameImagePath);
             if (gameInfo.GameImagePath == null) return 0;
 
             try

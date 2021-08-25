@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace ScreenScraperMetadata
             service = new ScreenScraperServiceClient(settings);
             ssGameInfo = service.GetJeuInfo(options.GameData)?.response.jeu;
             AvailableFields = GetAvailableFields();
-            searchRegions = GetRegionsToCheck().ToList();
+            searchRegions = GetRegionsToCheck();
         }
 
         public override List<MetadataField> AvailableFields { get; }
@@ -74,9 +75,10 @@ namespace ScreenScraperMetadata
             }
             else
             {
-                var imageFileOptions =  urls.Select(mediaUrl => new ImageFileOption(mediaUrl)).ToList();
+                var imageFileOptions = urls.Select(mediaUrl => new ImageFileOption(mediaUrl)).ToList();
                 url = plugin.PlayniteApi.Dialogs.ChooseImageFile(imageFileOptions, "Choose background image")?.Path;
             }
+
             return url != null ? new MetadataFile(url) : base.GetBackgroundImage();
         }
 
@@ -115,6 +117,7 @@ namespace ScreenScraperMetadata
             {
                 return null;
             }
+
             var url = FindMediaItem("wheel") ?? FindMediaItem("wheel-hd");
             return url != null ? new MetadataFile(url) : null;
         }
@@ -122,11 +125,7 @@ namespace ScreenScraperMetadata
         public override string? GetName()
         {
             var found = searchRegions.Select(region =>
-                    ssGameInfo?.noms.Find(nom =>
-                    {
-                        LogManager.GetLogger().Info("region: " + region + " item region: " + nom.langue);
-                        return region.Equals(nom.region);
-                    })
+                    ssGameInfo?.noms.Find(nom => region.Equals(nom.region))
                 ).First()
                 ?.text;
             return found;
@@ -177,13 +176,28 @@ namespace ScreenScraperMetadata
             return base.GetAgeRating();
         }
 
-        private IEnumerable<string> GetRegionsToCheck()
+        private List<string> GetRegionsToCheck()
         {
-            var regionsStr = settings.RegionPreferences;
-            var preferredRegions = regionsStr.Split(',').ToList();
-            var regions = new SortedSet<string> { GetGameRegion() };
-            regions.UnionWith(preferredRegions);
-            return regions;
+            var gameRegion = GetGameRegion();
+            var gameRegionPrependStr = gameRegion != null ? gameRegion + "," : "";
+            var regionsStr = gameRegionPrependStr + settings.RegionPreferences;
+            var preferredRegions = new string(
+                    regionsStr.ToCharArray()
+                        .Where(c => !Char.IsWhiteSpace(c))
+                        .ToArray())
+                .Split(',')
+                .Distinct()
+                .ToList();
+
+            if (!preferredRegions.HasItems())
+            {
+                //Use some defaults
+                preferredRegions.Add("us");
+                preferredRegions.Add("wor");
+                preferredRegions.Add("jp");
+            }
+
+            return preferredRegions;
         }
 
         private List<MetadataField> GetAvailableFields()
@@ -231,21 +245,23 @@ namespace ScreenScraperMetadata
             {
                 metadataFields.Add(MetadataField.AgeRating);
             }
-            
+
             metadataFields.Add(MetadataField.Platform);
 
             return metadataFields;
         }
 
-        private string GetGameRegion()
+        private string? GetGameRegion()
         {
-            if (!HasRomFile()) return "wor";
+            if (!HasRomFile()) return null;
 
             const string pattern = @"\((.+?)\)";
             var filename = GetRomFileName();
             foreach (Match m in Regex.Matches(filename, pattern))
             {
                 var regionCandidate = m.Groups[0].Value;
+                regionCandidate = regionCandidate.Replace(")", "");
+                regionCandidate = regionCandidate.Replace("(", "");
 
                 switch (regionCandidate)
                 {
@@ -287,7 +303,7 @@ namespace ScreenScraperMetadata
                 }
             }
 
-            return "wor";
+            return null;
         }
 
         private string? FindMediaItem(string type)
