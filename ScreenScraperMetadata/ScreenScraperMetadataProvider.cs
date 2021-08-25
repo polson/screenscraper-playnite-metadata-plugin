@@ -39,47 +39,46 @@ namespace ScreenScraperMetadata
 
         public override MetadataFile? GetCoverImage()
         {
-            var url = FindMediaItem("box-2D");
-            return url != null ? new MetadataFile(url) : base.GetCoverImage();
+            var media = FindMediaItems("box-2D").FirstOrDefault();
+            return DownloadToMetadataFile(media);
         }
 
         public override MetadataFile? GetBackgroundImage()
         {
-            var fanartUrls = FindMediaItems("fanart");
-            var screenshotUrls = FindMediaItems("ss").Concat(FindMediaItems("sstitle"));
-            var urls = new List<string>();
+            var fanarts = FindMediaItems("fanart");
+            var screenshots = FindMediaItems("ss").Concat(FindMediaItems("sstitle"));
+            var medias = new List<Media>();
             switch (settings.BackgroundPreference)
             {
                 case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.Fanart:
-                    urls.AddRange(fanartUrls);
+                    medias.AddRange(fanarts);
                     break;
                 case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.Screenshot:
-                {
-                    urls.AddRange(screenshotUrls);
+                    medias.AddRange(screenshots);
                     break;
-                }
                 case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.PreferFanart:
-                    urls.AddRange(fanartUrls.Concat(screenshotUrls));
+                    medias.AddRange(fanarts.Concat(screenshots));
                     break;
                 case ScreenScraperMetadataSettings.BackgroundPreferenceEnum.PreferScreenshot:
-                    urls.AddRange(screenshotUrls.Concat(fanartUrls));
+                    medias.AddRange(screenshots.Concat(fanarts));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            string? url = null;
-            if (options.IsBackgroundDownload || urls.Count <= 1)
+            Media? media;
+            if (options.IsBackgroundDownload || medias.Count <= 1)
             {
-                url = urls.FirstOrDefault();
+                media = medias.FirstOrDefault();
             }
             else
             {
-                var imageFileOptions = urls.Select(mediaUrl => new ImageFileOption(mediaUrl)).ToList();
-                url = plugin.PlayniteApi.Dialogs.ChooseImageFile(imageFileOptions, "Choose background image")?.Path;
+                var imageFileOptions =  medias.Select(m => new ImageFileOption(m.url)).ToList();
+                var url = plugin.PlayniteApi.Dialogs.ChooseImageFile(imageFileOptions, "Choose background image")?.Path;
+                media = medias.Find(m => m.url.Equals(url));
             }
 
-            return url != null ? new MetadataFile(url) : base.GetBackgroundImage();
+            return DownloadToMetadataFile(media);
         }
 
         public override string? GetDescription()
@@ -118,8 +117,8 @@ namespace ScreenScraperMetadata
                 return null;
             }
 
-            var url = FindMediaItem("wheel") ?? FindMediaItem("wheel-hd");
-            return url != null ? new MetadataFile(url) : null;
+            var media = FindMediaItems("wheel").FirstOrDefault() ?? FindMediaItems("wheel-hd").FirstOrDefault();
+            return DownloadToMetadataFile(media);
         }
 
         public override string? GetName()
@@ -192,6 +191,7 @@ namespace ScreenScraperMetadata
             if (!preferredRegions.HasItems())
             {
                 //Use some defaults
+                preferredRegions.Add("ss");
                 preferredRegions.Add("us");
                 preferredRegions.Add("wor");
                 preferredRegions.Add("jp");
@@ -306,19 +306,7 @@ namespace ScreenScraperMetadata
             return null;
         }
 
-        private string? FindMediaItem(string type)
-        {
-            var found = searchRegions.Select(region =>
-                    ssGameInfo?.medias.Find(item =>
-                        type.Equals(item.type)
-                        && (region.Equals(item.region) || item.region == null)
-                    ))
-                .Distinct()
-                .FirstOrDefault(mediaItem => mediaItem != null);
-            return found?.url ?? ssGameInfo?.medias.Find(item => type.Equals(item.type))?.url;
-        }
-
-        private IEnumerable<string> FindMediaItems(string type)
+        private IEnumerable<Media> FindMediaItems(string type)
         {
             return searchRegions.Select(region =>
                     ssGameInfo?.medias.Find(item =>
@@ -326,7 +314,7 @@ namespace ScreenScraperMetadata
                         && (region.Equals(item.region) || item.region == null)
                     ))
                 .Where(item => item != null)
-                .Select(item => item!.url)
+                .Select(item => item!)
                 .Distinct();
         }
 
@@ -338,6 +326,17 @@ namespace ScreenScraperMetadata
         private string GetRomFileName()
         {
             return Path.GetFileName(options.GameData.GameImagePath);
+        }
+
+        private MetadataFile? DownloadToMetadataFile(Media? media)
+        {
+            if (media == null)
+            {
+                return null;
+            }
+            var bytes = service.DownloadFile(media.url);
+            var name = media.url.GetHashCode() + "." + media.format;
+            return new MetadataFile(name, bytes, media.url);
         }
     }
 }

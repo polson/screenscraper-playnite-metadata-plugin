@@ -15,8 +15,6 @@ namespace ScreenScraperMetadata
 
         public string Password { get; set; } = string.Empty;
 
-        public bool ShouldUseScreenshots { get; set; }
-
         public string SelectedBackgroundPreference { get; set; }
         
         public bool ShouldUseGameLogosAsIcon { get; set; }
@@ -59,9 +57,10 @@ namespace ScreenScraperMetadata
             {
                 Username = savedSettings.Username;
                 RegionPreferences = savedSettings.RegionPreferences;
-                ShouldUseScreenshots = savedSettings.ShouldUseScreenshots;
                 Password = savedSettings.Password;
                 SelectedBackgroundPreference = savedSettings.SelectedBackgroundPreference;
+                BackgroundPreference = savedSettings.BackgroundPreference;
+                ShouldUseGameLogosAsIcon = savedSettings.ShouldUseGameLogosAsIcon;
             }
         }
 

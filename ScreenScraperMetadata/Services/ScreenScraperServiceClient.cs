@@ -68,6 +68,12 @@ namespace ScreenScraperMetadata.Services
             return name;
         }
 
+        public byte[] DownloadFile(string url)
+        {
+            var restClient = new RestClient();
+            return restClient.DownloadData(new RestRequest(url, Method.GET));
+        }
+
         private void InitSystemIds()
         {
             systemNameToIdMap = new Dictionary<string, string>
