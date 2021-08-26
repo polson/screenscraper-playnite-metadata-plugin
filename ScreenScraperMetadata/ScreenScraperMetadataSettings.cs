@@ -10,14 +10,14 @@ namespace ScreenScraperMetadata
 
         // Parameterless constructor must exist if you want to use LoadPluginSettings method.
         public string Username { get; set; } = string.Empty;
-
-        public string RegionPreferences { get; set; } = string.Empty;
-
-        public string Password { get; set; } = string.Empty;
-
-        public string SelectedBackgroundPreference { get; set; }
         
-        public bool ShouldUseGameLogosAsIcon { get; set; }
+        public string Password { get; set; } = string.Empty;
+        
+        public string RegionPreferences { get; set; } = "us,wor,eu,jp,ss";
+
+        public bool ShouldUseGameLogosAsIcon { get; set; } = false;
+
+        public bool ShouldAutoDetectRegion { get; set; } = true;
 
         public enum BackgroundPreferenceEnum
         {
@@ -26,7 +26,7 @@ namespace ScreenScraperMetadata
             PreferFanart,
             PreferScreenshot
         }
-        
+
         public Dictionary<BackgroundPreferenceEnum, string> BackgroundPreferencesWithCaptions { get; } = new()
             {
                 {BackgroundPreferenceEnum.Fanart, "Fanart"},
@@ -34,11 +34,12 @@ namespace ScreenScraperMetadata
                 {BackgroundPreferenceEnum.PreferFanart, "Both (Prefer fanart)"},
                 {BackgroundPreferenceEnum.PreferScreenshot, "Both (Prefer screenshot)"}
             };
-        
+
         public BackgroundPreferenceEnum BackgroundPreference
         {
-            get; set;
-        }
+            get;
+            set;
+        } = BackgroundPreferenceEnum.Fanart;
 
         public ScreenScraperMetadataSettings()
         {
@@ -58,9 +59,9 @@ namespace ScreenScraperMetadata
                 Username = savedSettings.Username;
                 RegionPreferences = savedSettings.RegionPreferences;
                 Password = savedSettings.Password;
-                SelectedBackgroundPreference = savedSettings.SelectedBackgroundPreference;
                 BackgroundPreference = savedSettings.BackgroundPreference;
                 ShouldUseGameLogosAsIcon = savedSettings.ShouldUseGameLogosAsIcon;
+                ShouldAutoDetectRegion = savedSettings.ShouldAutoDetectRegion;
             }
         }
 

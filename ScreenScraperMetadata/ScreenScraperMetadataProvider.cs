@@ -22,6 +22,7 @@ namespace ScreenScraperMetadata
         private readonly ScreenScraperServiceClient service;
         private readonly ScreenScraperMetadataSettings settings;
         private readonly Jeu? ssGameInfo;
+        private string PreferredLanguage => plugin.PlayniteApi.ApplicationSettings.Language;
 
         public ScreenScraperMetadataProvider(MetadataRequestOptions options, ScreenScraperMetadata plugin,
             ScreenScraperMetadataSettings settings)
@@ -73,7 +74,7 @@ namespace ScreenScraperMetadata
             }
             else
             {
-                var imageFileOptions =  medias.Select(m => new ImageFileOption(m.url)).ToList();
+                var imageFileOptions = medias.Select(m => new ImageFileOption(m.url)).ToList();
                 var url = plugin.PlayniteApi.Dialogs.ChooseImageFile(imageFileOptions, "Choose background image")?.Path;
                 media = medias.Find(m => m.url.Equals(url));
             }
@@ -83,9 +84,9 @@ namespace ScreenScraperMetadata
 
         public override string? GetDescription()
         {
-            var synopsis = ssGameInfo?.synopsis?.Find(
-                item => item.langue == "en"
-            );
+            LogManager.GetLogger().Info(">>LANGUAGE: " + PreferredLanguage);
+            var synopsis = ssGameInfo?.synopsis?.FirstOrDefault(item => PreferredLanguage.StartsWith(item.langue ?? ""))
+                           ?? ssGameInfo?.synopsis?.FirstOrDefault();
             var text = synopsis?.text;
             return HttpUtility.HtmlDecode(text);
         }
@@ -103,11 +104,19 @@ namespace ScreenScraperMetadata
 
         public override List<string?>? GetGenres()
         {
-            return ssGameInfo?.genres?.Select(
-                    item => item.noms.Find(nom => nom.langue == "en")?.text
+            var genres = ssGameInfo?.genres?.Select(
+                    item => item.noms.FirstOrDefault(nom => PreferredLanguage.StartsWith(nom.langue))?.text
                 )
                 .Where(genre => !string.IsNullOrEmpty(genre))
                 .ToList();
+            
+            if (!genres.HasItems())
+            {
+                genres = ssGameInfo?.genres?.Select(item => item.noms.FirstOrDefault()?.text)
+                    .Where(genre => !string.IsNullOrEmpty(genre))
+                    .ToList();
+            }
+            return genres;
         }
 
         public override MetadataFile? GetIcon()
@@ -123,11 +132,10 @@ namespace ScreenScraperMetadata
 
         public override string? GetName()
         {
-            var found = searchRegions.Select(region =>
-                    ssGameInfo?.noms.Find(nom => region.Equals(nom.region))
-                ).First()
-                ?.text;
-            return found;
+            return searchRegions
+                       .Select(region => ssGameInfo?.noms.FirstOrDefault(nom => region.Equals(nom.region))?.text)
+                       .FirstOrDefault(nom => !string.IsNullOrEmpty(nom))
+                   ?? ssGameInfo?.noms.FirstOrDefault()?.text;
         }
 
         public override string? GetPlatform()
@@ -144,13 +152,16 @@ namespace ScreenScraperMetadata
 
         public override DateTime? GetReleaseDate()
         {
-            var region = GetGameRegion();
-            var dateResult = ssGameInfo?.dates?.Find(dateInfo =>
-                dateInfo.region == region
-            ) ?? ssGameInfo?.dates?.FirstOrDefault();
+            var dateResult = searchRegions
+                                 .Select(region => ssGameInfo?.dates?.FirstOrDefault(dateInfo => region.Equals(dateInfo.region)))
+                                 .FirstOrDefault(item => item != null)
+                             ?? ssGameInfo?.dates?.FirstOrDefault();
 
-            if (dateResult == null) return base.GetReleaseDate();
-
+            if (dateResult == null)
+            {
+                return base.GetReleaseDate();
+            }
+            
             try
             {
                 return DateTime.ParseExact(
@@ -177,7 +188,7 @@ namespace ScreenScraperMetadata
 
         private List<string> GetRegionsToCheck()
         {
-            var gameRegion = GetGameRegion();
+            var gameRegion = settings.ShouldAutoDetectRegion ? GetGameRegion() : null;
             var gameRegionPrependStr = gameRegion != null ? gameRegion + "," : "";
             var regionsStr = gameRegionPrependStr + settings.RegionPreferences;
             var preferredRegions = new string(
@@ -187,16 +198,6 @@ namespace ScreenScraperMetadata
                 .Split(',')
                 .Distinct()
                 .ToList();
-
-            if (!preferredRegions.HasItems())
-            {
-                //Use some defaults
-                preferredRegions.Add("ss");
-                preferredRegions.Add("us");
-                preferredRegions.Add("wor");
-                preferredRegions.Add("jp");
-            }
-
             return preferredRegions;
         }
 
@@ -308,14 +309,27 @@ namespace ScreenScraperMetadata
 
         private IEnumerable<Media> FindMediaItems(string type)
         {
-            return searchRegions.Select(region =>
+            var medias = searchRegions.Select(region =>
                     ssGameInfo?.medias.Find(item =>
                         type.Equals(item.type)
-                        && (region.Equals(item.region) || item.region == null)
+                        && (region.Equals(item.region))
                     ))
                 .Where(item => item != null)
                 .Select(item => item!)
-                .Distinct();
+                .Distinct()
+                .ToList();
+
+            //If no medias found for the selected regions, add all of them
+            if (!medias.HasItems())
+            {
+                var allMedias = ssGameInfo?.medias.Where(item => type == item.type);
+                if (allMedias != null)
+                {
+                    medias.AddRange(allMedias);
+                }
+            }
+
+            return medias;
         }
 
         private bool HasRomFile()
@@ -334,6 +348,7 @@ namespace ScreenScraperMetadata
             {
                 return null;
             }
+
             var bytes = service.DownloadFile(media.url);
             var name = media.url.GetHashCode() + "." + media.format;
             return new MetadataFile(name, bytes, media.url);
