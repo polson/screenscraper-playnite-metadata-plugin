@@ -37,9 +37,11 @@ namespace ScreenScraperMetadata.Services
                 .AddParameter("romnom", gameInfo.GetRomFileName() ?? gameInfo.Name)
                 .AddParameter("romtaille", gameInfo.GetRomFileSize());
 
-            if (gameInfo.Platform != null)
+            if (gameInfo.Platforms != null)
             {
-                systemNameToIdMap.TryGetValue(gameInfo.Platform.Name, out var systemId);
+                MetadataSpecProperty specProperty = new(gameInfo.Platforms[0].SpecificationId);
+
+                systemNameToIdMap.TryGetValue(specProperty.ToString(), out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
             
@@ -132,7 +134,7 @@ namespace ScreenScraperMetadata.Services
                 { "DOS", "135" },
                 { "NEC PC-9801", "208" },
                 { "NEC PC-FX", "72" },
-                { "PC", "138" },
+                { "PC (Windows)", "138" },
                 { "NEC SuperGrafx", "105" },
                 { "NEC TurboGrafx 16", "31" },
                 { "NEC TurboGrafx-CD", "114" },
@@ -141,7 +143,7 @@ namespace ScreenScraperMetadata.Services
                 { "Microsoft Xbox 360", "33" },
                 { "Pokemon Mini", "211" },
                 { "Sony PlayStation 2", "58" },
-                { "Sony PSP", "61" },
+                { "Sony Playstation Portable", "61" },
                 { "Sony Playstation", "57" },
                 { "Sega Saturn", "22" },
                 { "ScummVM", "123" },
@@ -186,16 +188,16 @@ namespace ScreenScraperMetadata.Services
     {
         public static bool HasRomFile(this Game gameInfo)
         {
-            return File.Exists(gameInfo.GameImagePath);
+            return File.Exists(gameInfo.Roms[0].Path);
         }
 
         public static long GetRomFileSize(this Game gameInfo)
         {
-            if (gameInfo.GameImagePath == null) return 0;
+            if (gameInfo.Roms[0].Path == null) return 0;
 
             try
             {
-                return new FileInfo(gameInfo.GameImagePath).Length;
+                return new FileInfo(gameInfo.Roms[0].Path).Length;
             }
             catch (IOException)
             {
@@ -205,14 +207,14 @@ namespace ScreenScraperMetadata.Services
 
         public static string? GetRomFileName(this Game gameInfo)
         {
-            return Path.GetFileName(gameInfo.GameImagePath);
+            return Path.GetFileName(gameInfo.Roms[0].Path);
         }
 
 
         public static string GetRomMd5Hash(this Game gameInfo)
         {
             using var md5 = MD5.Create();
-            using var stream = File.OpenRead(gameInfo.GameImagePath);
+            using var stream = File.OpenRead(gameInfo.Roms[0].Path);
             var bytes = md5.ComputeHash(stream);
             return BitConverter.ToString(bytes).Replace("-", "");
         }

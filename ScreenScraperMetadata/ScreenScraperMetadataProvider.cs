@@ -1,13 +1,12 @@
 ﻿#nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using Playnite.SDK;
-using Playnite.SDK.Metadata;
+using Playnite.SDK.Models;
 using Playnite.SDK.Plugins;
 using ScreenScraperMetadata.Models;
 using ScreenScraperMetadata.Services;
@@ -334,12 +333,12 @@ namespace ScreenScraperMetadata
 
         private bool HasRomFile()
         {
-            return File.Exists(options.GameData.GameImagePath);
+            return File.Exists(options.GameData.Roms[0].Path);
         }
 
         private string GetRomFileName()
         {
-            return Path.GetFileName(options.GameData.GameImagePath);
+            return Path.GetFileName(options.GameData.Roms[0].Path);
         }
 
         private MetadataFile? DownloadToMetadataFile(Media? media)
