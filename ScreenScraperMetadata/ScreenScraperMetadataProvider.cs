@@ -37,13 +37,13 @@ namespace ScreenScraperMetadata
 
         public override List<MetadataField> AvailableFields { get; }
 
-        public override MetadataFile? GetCoverImage()
+        public override MetadataFile? GetCoverImage(GetMetadataFieldArgs args)
         {
             var media = FindMediaItems("box-2D").FirstOrDefault();
             return DownloadToMetadataFile(media);
         }
 
-        public override MetadataFile? GetBackgroundImage()
+        public override MetadataFile? GetBackgroundImage(GetMetadataFieldArgs args)
         {
             var fanarts = FindMediaItems("fanart");
             var screenshots = FindMediaItems("ss").Concat(FindMediaItems("sstitle"));
@@ -81,7 +81,7 @@ namespace ScreenScraperMetadata
             return DownloadToMetadataFile(media);
         }
 
-        public override string? GetDescription()
+        public override string? GetDescription(GetMetadataFieldArgs args)
         {
             LogManager.GetLogger().Info(">>LANGUAGE: " + PreferredLanguage);
             var synopsis = ssGameInfo?.synopsis?.FirstOrDefault(item => PreferredLanguage.StartsWith(item.langue ?? ""))
@@ -90,18 +90,18 @@ namespace ScreenScraperMetadata
             return HttpUtility.HtmlDecode(text);
         }
 
-        public override List<string>? GetDevelopers()
+        public override IEnumerable<MetadataProperty>? GetDevelopers(GetMetadataFieldArgs args)
         {
             var developer = ssGameInfo?.developpeur?.text;
             if (developer != null)
-                return new List<string>
+                return new List<String>
                 {
                     developer
-                };
-            return base.GetDevelopers();
+                }.Select(a => new MetadataNameProperty(a)).ToList();
+            return base.GetDevelopers(args);
         }
 
-        public override List<string?>? GetGenres()
+        public override IEnumerable<MetadataProperty>? GetGenres(GetMetadataFieldArgs args)
         {
             var genres = ssGameInfo?.genres?.Select(
                     item => item.noms.FirstOrDefault(nom => PreferredLanguage.StartsWith(nom.langue))?.text
@@ -115,10 +115,10 @@ namespace ScreenScraperMetadata
                     .Where(genre => !string.IsNullOrEmpty(genre))
                     .ToList();
             }
-            return genres;
+            return genres.Select(a => new MetadataNameProperty(a)).ToList();
         }
 
-        public override MetadataFile? GetIcon()
+        public override MetadataFile? GetIcon(GetMetadataFieldArgs args)
         {
             if (!settings.ShouldUseGameLogosAsIcon)
             {
@@ -129,7 +129,7 @@ namespace ScreenScraperMetadata
             return DownloadToMetadataFile(media);
         }
 
-        public override string? GetName()
+        public override string? GetName(GetMetadataFieldArgs args)
         {
             return searchRegions
                        .Select(region => ssGameInfo?.noms.FirstOrDefault(nom => region.Equals(nom.region))?.text)
@@ -137,19 +137,22 @@ namespace ScreenScraperMetadata
                    ?? ssGameInfo?.noms.FirstOrDefault()?.text;
         }
 
-        public override string? GetPlatform()
+        public override IEnumerable<MetadataProperty>? GetPlatforms(GetMetadataFieldArgs args)
         {
             var platformId = ssGameInfo?.systeme.id;
-            return platformId != null ? service.GetPlatformNameById(platformId) : base.GetPlatform();
+            return platformId != null ? new List<String> { service.GetPlatformNameById(platformId) }
+            .Select(a => new MetadataNameProperty(a)).ToList()
+                : base.GetPlatforms(args);
         }
 
-        public override List<string>? GetPublishers()
+        public override IEnumerable<MetadataProperty>? GetPublishers(GetMetadataFieldArgs args)
         {
             var publisher = ssGameInfo?.editeur?.text;
-            return publisher != null ? new List<string> { publisher } : base.GetDevelopers();
+            return publisher != null ? new List<string> { publisher }.Select(a => new MetadataNameProperty(a)).ToList()
+                : base.GetDevelopers(args);
         }
 
-        public override DateTime? GetReleaseDate()
+        public override ReleaseDate? GetReleaseDate(GetMetadataFieldArgs args)
         {
             var dateResult = searchRegions
                                  .Select(region => ssGameInfo?.dates?.FirstOrDefault(dateInfo => region.Equals(dateInfo.region)))
@@ -158,31 +161,32 @@ namespace ScreenScraperMetadata
 
             if (dateResult == null)
             {
-                return base.GetReleaseDate();
+                return base.GetReleaseDate(args);
             }
             
             try
             {
-                return DateTime.ParseExact(
+                return new ReleaseDate(DateTime.ParseExact(
                     dateResult.text,
                     dateResult.text?.Length == 4 ? "yyyy" : "yyyy-MM-dd",
                     null
-                );
+                ));
             }
             catch (Exception)
             {
-                return base.GetReleaseDate();
+                return base.GetReleaseDate(args);
             }
         }
 
-        public override string? GetAgeRating()
+        public override IEnumerable<MetadataProperty>? GetAgeRatings(GetMetadataFieldArgs args)
         {
             var ageRatingPreference = plugin.PlayniteApi.ApplicationSettings.AgeRatingOrgPriority;
             var dateResult = ssGameInfo?.classifications?.Find(rating =>
                 rating.type == ageRatingPreference.ToString()
             ) ?? ssGameInfo?.classifications?.FirstOrDefault();
-            if (dateResult != null) return dateResult.type + " " + dateResult.text;
-            return base.GetAgeRating();
+            if (dateResult != null) return new List<String> { dateResult.type + " " + dateResult.text }
+            .Select(a => new MetadataNameProperty(a)).ToList();
+            return base.GetAgeRatings(args);
         }
 
         private List<string> GetRegionsToCheck()
