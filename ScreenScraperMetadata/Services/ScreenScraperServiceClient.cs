@@ -39,7 +39,7 @@ namespace ScreenScraperMetadata.Services
 
             if (gameInfo.Platforms != null)
             {
-                systemNameToIdMap.TryGetValue(gameInfo.Platforms[0].SpecificationId.ToString(), out var systemId);
+                systemNameToIdMap.TryGetValue(gameInfo.Platforms[0]?.SpecificationId.ToString(), out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
             
@@ -186,16 +186,16 @@ namespace ScreenScraperMetadata.Services
     {
         public static bool HasRomFile(this Game gameInfo)
         {
-            return File.Exists(gameInfo.Roms[0].Path);
+            return File.Exists(gameInfo.Roms[0]?.Path);
         }
 
         public static long GetRomFileSize(this Game gameInfo)
         {
-            if (gameInfo.Roms[0].Path == null) return 0;
+            if (gameInfo.Roms[0]?.Path == null) return 0;
 
             try
             {
-                return new FileInfo(gameInfo.Roms[0].Path).Length;
+                return new FileInfo(gameInfo.Roms[0]?.Path).Length;
             }
             catch (IOException)
             {
@@ -205,7 +205,7 @@ namespace ScreenScraperMetadata.Services
 
         public static string? GetRomFileName(this Game gameInfo)
         {
-            return Path.GetFileName(gameInfo.Roms[0].Path);
+            return Path.GetFileName(gameInfo.Roms[0]?.Path);
         }
 
 
