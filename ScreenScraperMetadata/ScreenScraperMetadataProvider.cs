@@ -140,7 +140,7 @@ namespace ScreenScraperMetadata
         public override IEnumerable<MetadataProperty>? GetPlatforms(GetMetadataFieldArgs args)
         {
             var platformId = ssGameInfo?.systeme.id;
-            return platformId != null ? new List<String> { service.GetPlatformNameById(platformId) }
+            return platformId != null ? new List<String?> { service.GetPlatformNameById(platformId) }
             .Select(a => new MetadataNameProperty(a)).ToList()
                 : base.GetPlatforms(args);
         }
