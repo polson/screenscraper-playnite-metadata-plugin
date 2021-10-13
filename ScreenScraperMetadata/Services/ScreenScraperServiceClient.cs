@@ -48,7 +48,7 @@ namespace ScreenScraperMetadata.Services
             if (gameInfo.HasRomFile())
             {
                 request.AddParameter("romtype", "rom");
-     //           request.AddParameter("md5", gameInfo.GetRomMd5Hash());
+                request.AddParameter("md5", gameInfo.GetRomMd5Hash());
             }
 
             var response = client.Execute<JeuInfo>(request);
