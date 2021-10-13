@@ -108,7 +108,7 @@ namespace ScreenScraperMetadata
                 )
                 .Where(genre => !string.IsNullOrEmpty(genre))
                 .ToList();
-            
+
             if (!genres.HasItems())
             {
                 genres = ssGameInfo?.genres?.Select(item => item.noms.FirstOrDefault()?.text)
@@ -137,15 +137,15 @@ namespace ScreenScraperMetadata
                    ?? ssGameInfo?.noms.FirstOrDefault()?.text;
         }
 
-//      It will need a rework of this function, since it not parses the id of the systems
-//
-//        public override IEnumerable<MetadataProperty>? GetPlatforms(GetMetadataFieldArgs args)
-//        {
-//            var platformId = ssGameInfo?.systeme.id;
-//            return platformId != null ? new List<String?> { service.GetPlatformNameById(platformId) }
-//            .Select(a => new MetadataNameProperty(a)).ToList()
-//                : base.GetPlatforms(args);
-//        }
+        //It will need a rework of this function, since it not parses the id of the systems
+
+        //        public override IEnumerable<MetadataProperty>? GetPlatforms(GetMetadataFieldArgs args)
+        //{
+        //    var platformId = ssGameInfo?.systeme.id;
+        //    return platformId != null ? new List<String?> { service.GetPlatformNameById(platformId) }
+        //    .Select(a => new MetadataNameProperty(a)).ToList()
+        //        : base.GetPlatforms(args);
+        //}
 
         public override IEnumerable<MetadataProperty>? GetPublishers(GetMetadataFieldArgs args)
         {
@@ -165,7 +165,7 @@ namespace ScreenScraperMetadata
             {
                 return base.GetReleaseDate(args);
             }
-            
+
             try
             {
                 return new ReleaseDate(DateTime.ParseExact(
