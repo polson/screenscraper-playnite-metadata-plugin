@@ -137,13 +137,15 @@ namespace ScreenScraperMetadata
                    ?? ssGameInfo?.noms.FirstOrDefault()?.text;
         }
 
-        public override IEnumerable<MetadataProperty>? GetPlatforms(GetMetadataFieldArgs args)
-        {
-            var platformId = ssGameInfo?.systeme.id;
-            return platformId != null ? new List<String?> { service.GetPlatformNameById(platformId) }
-            .Select(a => new MetadataNameProperty(a)).ToList()
-                : base.GetPlatforms(args);
-        }
+//      It will need a rework of this function, since it not parses the id of the systems
+//
+//        public override IEnumerable<MetadataProperty>? GetPlatforms(GetMetadataFieldArgs args)
+//        {
+//            var platformId = ssGameInfo?.systeme.id;
+//            return platformId != null ? new List<String?> { service.GetPlatformNameById(platformId) }
+//            .Select(a => new MetadataNameProperty(a)).ToList()
+//                : base.GetPlatforms(args);
+//        }
 
         public override IEnumerable<MetadataProperty>? GetPublishers(GetMetadataFieldArgs args)
         {
