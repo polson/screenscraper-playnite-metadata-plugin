@@ -74,6 +74,7 @@ namespace ScreenScraperMetadata.Services
             return restClient.DownloadData(new RestRequest(url, Method.GET));
         }
 
+//      all the commented systems don't have a specification in P9  
         private void InitSystemIds()
         {
 
@@ -111,10 +112,6 @@ namespace ScreenScraperMetadata.Services
          //       { "Sharp X68000", "79" },
             };
 
-            systemIdToNameMap =
-                systemNameToIdMap.ToDictionary(kv => kv.Value, kv => kv.Key);
-
-            //Add extra names
             systemNameToIdMap.Add("3do", "29");
             systemNameToIdMap.Add("amstrad_cpc", "65");
             systemNameToIdMap.Add("apple_2", "86");
@@ -171,14 +168,17 @@ namespace ScreenScraperMetadata.Services
             systemNameToIdMap.Add("snk_neogeo_cd", "70");
             systemNameToIdMap.Add("sinclair_zx81", "77");
             systemNameToIdMap.Add("sinclair_zxspectrum", "76");
-            //       systemNameToIdMap.Add("Apple IIgs", "86");
-            //       systemNameToIdMap.Add("Apple III", "86");
-            //       systemNameToIdMap.Add("Nintendo Game & Watch", "52");
-            //       systemNameToIdMap.Add("Nintendo 64DD", "14");
-            //       systemNameToIdMap.Add("Nintendo Satellaview", "2");
-            //       systemNameToIdMap.Add("Nintendo Sufami Turbo", "2");
-            //       systemNameToIdMap.Add("PC Engine SuperGrafx", "5");
-            //       systemIdToNameMap.Add("Mame 2003 Plus", "75");
+     //       systemNameToIdMap.Add("Apple IIgs", "86");
+     //       systemNameToIdMap.Add("Apple III", "86");
+     //       systemNameToIdMap.Add("Nintendo Game & Watch", "52");
+     //       systemNameToIdMap.Add("Nintendo 64DD", "14");
+     //       systemNameToIdMap.Add("Nintendo Satellaview", "2");
+     //       systemNameToIdMap.Add("Nintendo Sufami Turbo", "2");
+     //       systemNameToIdMap.Add("PC Engine SuperGrafx", "5");
+
+            systemIdToNameMap =
+                systemNameToIdMap.ToDictionary(kv => kv.Value, kv => kv.Key);
+     //       systemIdToNameMap.Add("Mame 2003 Plus", "75");
         }
     }
 
