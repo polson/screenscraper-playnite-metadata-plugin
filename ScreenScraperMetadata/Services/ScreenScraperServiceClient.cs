@@ -46,7 +46,7 @@ namespace ScreenScraperMetadata.Services
             if (gameInfo.HasRomFile())
             {
                 request.AddParameter("romtype", "rom");
-                request.AddParameter("md5", gameInfo.GetRomMd5Hash());
+                //request.AddParameter("md5", gameInfo.GetRomMd5Hash());
             }
 
             var response = client.Execute<JeuInfo>(request);
@@ -97,35 +97,34 @@ namespace ScreenScraperMetadata.Services
                 { "commodore_amiga", "64" },
                 { "commodore_amiga_cd32", "130" },
                 { "commodore_vci20", "73" },
-                { "pc_dos", "135" },
-                { "vectrex", "102" },
                 { "mattel_intellivision", "115" },
                 { "nintendo_3ds", "17" },
                 { "nintendo_64", "14" },
+                { "nintendo_ds", "15" },
                 { "nintendo_famicom_disk", "106" },
                 { "nintendo_gameboy", "9" },
                 { "nintendo_gameboyadvance", "12" },
                 { "nintendo_gameboycolor", "10" },
                 { "nintendo_gamecube", "13" },
-                { "nintendo_ds", "15" },
-                { "nintendo_switch", "225" },
                 { "nintendo_nes", "3" },
                 { "nintendo_super_nes", "4" },
+                { "nintendo_switch", "225" },
                 { "nintendo_virtualboy", "11" },
                 { "nintendo_wii", "16" },
                 { "nintendo_wiiu", "18" },
                 { "snk_neogeopocket", "25" },
                 { "snk_neogeopocket_color", "82" },
-                { "xbox", "32" },
-                { "xbox360", "33" },
                 { "nec_pcfx", "72" },
                 { "nec_supergrafx", "105" },
                 { "nec_turbografx_16", "31" },
                 { "nec_turbografx_cd", "114" },
+                { "pc_dos", "135" },
                 { "pc_windows", "138" },
-                { "sony_playstation2", "58" },
-                { "sony_psp", "61" },
                 { "sony_playstation", "57" },
+                { "sony_playstation2", "58" },
+                { "sony_playstation3", "59" },
+                { "sony_psp", "61" },
+                { "sony_vita", "62" },
                 { "sega_saturn", "22" },
                 { "sega_32x", "19" },
                 { "sega_cd", "20" },
@@ -135,7 +134,10 @@ namespace ScreenScraperMetadata.Services
                 { "sega_dreamcast", "23" },
                 { "snk_neogeo_cd", "70" },
                 { "sinclair_zx81", "77" },
-                { "sinclair_zxspectrum", "76" }
+                { "sinclair_zxspectrum", "76" },
+                { "vectrex", "102" },
+                { "xbox", "32" },
+                { "xbox360", "33" }
                 //{ "Arcade", "75" },
                 //{ "Atari Jaguar CD", "171" },
                 //{ "Bally Astrocade", "44" },
