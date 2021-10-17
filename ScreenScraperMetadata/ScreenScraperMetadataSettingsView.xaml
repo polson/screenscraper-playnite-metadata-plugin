@@ -39,5 +39,11 @@
         <CheckBox
             IsChecked="{Binding ShouldUseGameLogosAsIcon}"
             Margin="0,15,0,0">Allow downloading game logos as icons</CheckBox>
+        <CheckBox
+            IsChecked="{Binding ShouldUseMd5Hash}"
+            Margin="0,15,0,0">Use MD5 hash for improved matching</CheckBox>
+        <CheckBox
+            IsChecked="{Binding ShouldUsePlayniteGameName}"
+            Margin="0,15,0,0">Use Playnite name instead of ROM name for matching</CheckBox>
     </StackPanel>
 </UserControl>

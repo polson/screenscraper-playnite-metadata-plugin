@@ -33,20 +33,32 @@ namespace ScreenScraperMetadata.Services
                 .AddParameter("ssid", settings.Username)
                 .AddParameter("sspassword", settings.Password)
                 .AddParameter("softname", "SuperScraper-0.1")
-                .AddParameter("output", "json")
-                .AddParameter("romnom", gameInfo.GetRomFileName() ?? gameInfo.Name)
-                .AddParameter("romtaille", gameInfo.GetRomFileSize());
+                .AddParameter("output", "json");
 
-            if (gameInfo.Platform != null)
+            if (settings.ShouldUsePlayniteGameName)
             {
-                systemNameToIdMap.TryGetValue(gameInfo.Platform.Name, out var systemId);
+                request.AddParameter("romnom", gameInfo.Name);
+            }
+            else
+            {
+                request.AddParameter("romnom", gameInfo.GetRomFileName() ?? gameInfo.Name);
+                request.AddParameter("romtaille", gameInfo.GetRomFileSize());
+            }
+
+            var specificationId = gameInfo.Platforms?[0]?.SpecificationId;
+            if (specificationId != null)
+            {
+                systemNameToIdMap.TryGetValue(specificationId, out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
-            
+
             if (gameInfo.HasRomFile())
             {
                 request.AddParameter("romtype", "rom");
-                request.AddParameter("md5", gameInfo.GetRomMd5Hash());
+                if (settings.ShouldUseMd5Hash)
+                {
+                    request.AddParameter("md5", gameInfo.GetRomMd5Hash());
+                }
             }
 
             var response = client.Execute<JeuInfo>(request);
@@ -62,12 +74,6 @@ namespace ScreenScraperMetadata.Services
             return null;
         }
 
-        public string? GetPlatformNameById(string platformId)
-        {
-            systemIdToNameMap.TryGetValue(platformId, out var name);
-            return name;
-        }
-
         public byte[] DownloadFile(string url)
         {
             var restClient = new RestClient();
@@ -76,126 +82,96 @@ namespace ScreenScraperMetadata.Services
 
         private void InitSystemIds()
         {
+
             systemNameToIdMap = new Dictionary<string, string>
             {
-                { "3DO Interactive Multiplayer", "29" },
-                { "Nintendo 3DS", "17" },
-                { "Commodore Amiga", "64" },
-                { "Commodore Amiga (AGA)", "111" },
-                { "Commodore Amiga CD32", "130" },
-                { "Commodore Amiga CDTV", "129" },
-                { "Amstrad CPC", "65" },
-                { "Apple II", "86" },
-                { "Arcade", "75" },
-                { "Emerson Arcadia 2001", "94" },
-                { "Bally Astrocade", "44" },
-                { "Atari 800", "43" },
-                { "Atari 2600", "26" },
-                { "Atari 5200", "40" },
-                { "Atari 7800", "41" },
-                { "Atari Jaguar", "27" },
-                { "Atari Jaguar CD", "171" },
-                { "Atari Lynx", "28" },
-                { "Atari ST/STE/TT/Falcon", "42" },
-                { "Capcom CP System I", "6" },
-                { "Capcom CP System II", "7" },
-                { "Capcom CP System III", "8" },
-                { "CAVE CV1000", "47" },
-                { "Commodore 64", "66" },
-                { "Channel F", "80" },
-                { "Coleco ColecoVision", "48" },
-                { "Daphne", "49" },
-                { "Dragon 32", "91" },
-                { "Sega Dreamcast", "23" },
-                { "Nintendo Family Computer Disk System", "106" },
-                { "Handheld Electronic Game", "52" },
-                { "Sega Game Gear", "21" },
-                { "Nintendo Game Boy", "9" },
-                { "Nintendo Game Boy Advance", "12" },
-                { "Nintendo Game Boy Color", "10" },
-                { "Nintendo GameCube", "13" },
-                { "Sega Genesis", "1" },
-                { "Mattel Intellivision", "115" },
-                { "Sega Master System", "2" },
-                { "Sega CD", "20" },
-                { "Microsoft MSX", "113" },
-                { "Microsoft MSX2", "116" },
-                { "Nintendo 64", "14" },
-                { "Nintendo DS", "15" },
-                { "SNK Neo Geo", "142" },
-                { "SNK Neo Geo CD", "70" },
-                { "Nintendo Entertainment System", "3" },
-                { "SNK Neo Geo Pocket", "25" },
-                { "SNK Neo Geo Pocket Color", "82" },
-                { "OpenBOR", "214" },
-                { "Oric Atmos", "131" },
-                { "DOS", "135" },
-                { "NEC PC-9801", "208" },
-                { "NEC PC-FX", "72" },
-                { "PC", "138" },
-                { "NEC SuperGrafx", "105" },
-                { "NEC TurboGrafx 16", "31" },
-                { "NEC TurboGrafx-CD", "114" },
-                { "Microsoft Xbox", "32" },
-                { "Philips CD-i", "133" },
-                { "Microsoft Xbox 360", "33" },
-                { "Pokemon Mini", "211" },
-                { "Sony PlayStation 2", "58" },
-                { "Sony PSP", "61" },
-                { "Sony Playstation", "57" },
-                { "Sega Saturn", "22" },
-                { "ScummVM", "123" },
-                { "Sega 32X", "19" },
-                { "Gaelco", "194" },
-                { "Sega SG 1000", "109" },
-                { "Super Nintendo Entertainment System", "4" },
-                { "Nintendo Switch", "225" },
-                { "Texas Instruments TI 99/4A", "205" },
-                { "Tandy TRS-80 Color Computer", "144" },
-                { "GCE Vectrex", "102" },
-                { "Commodore VIC20", "73" },
-                { "Magnavox Odyssey2", "104" },
-                { "Nintendo Virtual Boy", "11" },
-                { "Nintendo Wii", "16" },
-                { "Nintendo Wii U", "18" },
-                { "Bandai WonderSwan", "45" },
-                { "Bandai WonderSwan Color", "46" },
-                { "Sharp X68000", "79" },
-                { "Sinclair ZX 81", "77" },
-                { "Sinclair ZX Spectrum", "76" },
-                { "Sammy Atomiswave", "53" }
+                { "3do", "29" },
+                { "amstrad_cpc", "65" },
+                { "apple_2", "86" },
+                { "atari_8bit", "43" },
+                { "atari_2600", "26" },
+                { "atari_5200", "40" },
+                { "atari_7800", "41" },
+                { "atari_jaguar", "27" },
+                { "atari_lynx", "28" },
+                { "atari_st", "42" },
+                { "bandai_wonderswan", "45" },
+                { "bandai_wonderswan_color", "46" },
+                { "coleco_vision", "48" },
+                { "commodore_64", "66" },
+                { "commodore_amiga", "64" },
+                { "commodore_amiga_cd32", "130" },
+                { "commodore_vci20", "73" },
+                { "mattel_intellivision", "115" },
+                { "nintendo_3ds", "17" },
+                { "nintendo_64", "14" },
+                { "nintendo_ds", "15" },
+                { "nintendo_famicom_disk", "106" },
+                { "nintendo_gameboy", "9" },
+                { "nintendo_gameboyadvance", "12" },
+                { "nintendo_gameboycolor", "10" },
+                { "nintendo_gamecube", "13" },
+                { "nintendo_nes", "3" },
+                { "nintendo_super_nes", "4" },
+                { "nintendo_switch", "225" },
+                { "nintendo_virtualboy", "11" },
+                { "nintendo_wii", "16" },
+                { "nintendo_wiiu", "18" },
+                { "snk_neogeopocket", "25" },
+                { "snk_neogeopocket_color", "82" },
+                { "nec_pcfx", "72" },
+                { "nec_supergrafx", "105" },
+                { "nec_turbografx_16", "31" },
+                { "nec_turbografx_cd", "114" },
+                { "pc_dos", "135" },
+                { "pc_windows", "138" },
+                { "sony_playstation", "57" },
+                { "sony_playstation2", "58" },
+                { "sony_playstation3", "59" },
+                { "sony_psp", "61" },
+                { "sony_vita", "62" },
+                { "sega_saturn", "22" },
+                { "sega_32x", "19" },
+                { "sega_cd", "20" },
+                { "sega_genesis", "1" },
+                { "sega_gamegear", "21" },
+                { "sega_mastersystem", "2" },
+                { "sega_dreamcast", "23" },
+                { "snk_neogeo_cd", "70" },
+                { "sinclair_zx81", "77" },
+                { "sinclair_zxspectrum", "76" },
+                { "vectrex", "102" },
+                { "xbox", "32" },
+                { "xbox360", "33" }
             };
 
             systemIdToNameMap =
-                systemNameToIdMap.ToDictionary(kv => kv.Value, kv => kv.Key);
+            systemNameToIdMap.ToDictionary(kv => kv.Value, kv => kv.Key);
 
             //Add extra names
-            systemNameToIdMap.Add("Apple IIgs", "86");
-            systemNameToIdMap.Add("Apple III", "86");
-            systemNameToIdMap.Add("Commodore PLUS4", "66");
-            systemNameToIdMap.Add("Nintendo Game & Watch", "52");
-            systemNameToIdMap.Add("Nintendo 64DD", "14");
-            systemNameToIdMap.Add("Nintendo Satellaview", "2");
-            systemNameToIdMap.Add("Nintendo Sufami Turbo", "2");
-            systemNameToIdMap.Add("PC Engine SuperGrafx", "5");
-            systemIdToNameMap.Add("Mame 2003 Plus", "75");
+            systemNameToIdMap.Add("commodore_plus4", "66");
         }
     }
 
     public static class GameInfoExtensions
     {
+        private static string? GetRomPath(this Game gameInfo)
+        {
+            return gameInfo.Roms[0]?.Path;
+        }
+        
         public static bool HasRomFile(this Game gameInfo)
         {
-            return File.Exists(gameInfo.GameImagePath);
+            return File.Exists(gameInfo.GetRomPath());
         }
 
         public static long GetRomFileSize(this Game gameInfo)
         {
-            if (gameInfo.GameImagePath == null) return 0;
-
+            var romPath = gameInfo.GetRomPath();
+            if (romPath == null) return 0;
             try
             {
-                return new FileInfo(gameInfo.GameImagePath).Length;
+                return new FileInfo(romPath).Length;
             }
             catch (IOException)
             {
@@ -205,14 +181,16 @@ namespace ScreenScraperMetadata.Services
 
         public static string? GetRomFileName(this Game gameInfo)
         {
-            return Path.GetFileName(gameInfo.GameImagePath);
+            return Path.GetFileName(gameInfo.GetRomPath());
         }
 
 
         public static string GetRomMd5Hash(this Game gameInfo)
         {
+            var romPath = gameInfo.GetRomPath();
+            if (romPath == null) return "";
             using var md5 = MD5.Create();
-            using var stream = File.OpenRead(gameInfo.GameImagePath);
+            using var stream = File.OpenRead(romPath);
             var bytes = md5.ComputeHash(stream);
             return BitConverter.ToString(bytes).Replace("-", "");
         }
