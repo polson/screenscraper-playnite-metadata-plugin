@@ -181,7 +181,7 @@ namespace ScreenScraperMetadata.Services
 
         public static string? GetRomFileName(this Game gameInfo)
         {
-            return Path.GetFileName(gameInfo.Roms[0]?.Path);
+            return Path.GetFileName(gameInfo.GetRomPath());
         }
 
 

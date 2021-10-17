@@ -329,15 +329,20 @@ namespace ScreenScraperMetadata
 
             return medias;
         }
+        
+        private string? GetRomPath()
+        {
+            return options.GameData.Roms[0]?.Path;
+        }
 
         private bool HasRomFile()
         {
-            return File.Exists(options.GameData.Roms[0]?.Path);
+            return File.Exists(GetRomPath());
         }
 
         private string GetRomFileName()
         {
-            return Path.GetFileName(options.GameData.Roms[0]?.Path);
+            return Path.GetFileName(GetRomPath());
         }
 
         private MetadataFile? DownloadToMetadataFile(Media? media)
