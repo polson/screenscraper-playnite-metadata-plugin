@@ -33,20 +33,32 @@ namespace ScreenScraperMetadata.Services
                 .AddParameter("ssid", settings.Username)
                 .AddParameter("sspassword", settings.Password)
                 .AddParameter("softname", "SuperScraper-0.1")
-                .AddParameter("output", "json")
-                .AddParameter("romnom", gameInfo.GetRomFileName() ?? gameInfo.Name)
-                .AddParameter("romtaille", gameInfo.GetRomFileSize());
+                .AddParameter("output", "json");
 
-            if (gameInfo.Platforms != null)
+            if (settings.ShouldUsePlayniteGameName)
             {
-                systemNameToIdMap.TryGetValue(gameInfo.Platforms[0]?.SpecificationId.ToString(), out var systemId);
+                request.AddParameter("romnom", gameInfo.Name);
+            }
+            else
+            {
+                request.AddParameter("romnom", gameInfo.GetRomFileName() ?? gameInfo.Name);
+                request.AddParameter("romtaille", gameInfo.GetRomFileSize());
+            }
+
+            var specificationId = gameInfo.Platforms?[0]?.SpecificationId;
+            if (specificationId != null)
+            {
+                systemNameToIdMap.TryGetValue(specificationId, out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
 
             if (gameInfo.HasRomFile())
             {
                 request.AddParameter("romtype", "rom");
-                //request.AddParameter("md5", gameInfo.GetRomMd5Hash());
+                if (settings.ShouldUseMd5Hash)
+                {
+                    request.AddParameter("md5", gameInfo.GetRomMd5Hash());
+                }
             }
 
             var response = client.Execute<JeuInfo>(request);
@@ -62,19 +74,12 @@ namespace ScreenScraperMetadata.Services
             return null;
         }
 
-        public string? GetPlatformNameById(string platformId)
-        {
-            systemIdToNameMap.TryGetValue(platformId, out var name);
-            return name;
-        }
-
         public byte[] DownloadFile(string url)
         {
             var restClient = new RestClient();
             return restClient.DownloadData(new RestRequest(url, Method.GET));
         }
 
-        //all the commented systems don't have a specification in P9  
         private void InitSystemIds()
         {
 
@@ -138,36 +143,6 @@ namespace ScreenScraperMetadata.Services
                 { "vectrex", "102" },
                 { "xbox", "32" },
                 { "xbox360", "33" }
-                //{ "Arcade", "75" },
-                //{ "Atari Jaguar CD", "171" },
-                //{ "Bally Astrocade", "44" },
-                //{ "Commodore Amiga (AGA)", "111" },
-                //{ "Commodore Amiga CDTV", "129" },
-                //{ "Emerson Arcadia 2001", "94" },
-                //{ "Capcom CP System I", "6" },
-                //{ "Capcom CP System II", "7" },
-                //{ "Capcom CP System III", "8" },
-                //{ "CAVE CV1000", "47" },
-                //{ "Channel F", "80" },
-                //{ "Daphne", "49" },
-                //{ "Dragon 32", "91" },
-                //{ "Handheld Electronic Game", "52" },
-                //{ "Gaelco", "194" },
-                //{ "Microsoft MSX", "113" },
-                //{ "Microsoft MSX2", "116" },
-                //{ "Magnavox Odyssey2", "104" },
-                //{ "NEC PC-9801", "208" },
-                //{ "OpenBOR", "214" },
-                //{ "Oric Atmos", "131" },
-                //{ "Philips CD-i", "133" },
-                //{ "Pokemon Mini", "211" },
-                //{ "Sammy Atomiswave", "53" },
-                //{ "ScummVM", "123" },
-                //{ "Sega SG 1000", "109" },
-                //{ "SNK Neo Geo", "142" },
-                //{ "Texas Instruments TI 99/4A", "205" },
-                //{ "Tandy TRS-80 Color Computer", "144" },
-                //{ "Sharp X68000", "79" },
             };
 
             systemIdToNameMap =
@@ -175,33 +150,28 @@ namespace ScreenScraperMetadata.Services
 
             //Add extra names
             systemNameToIdMap.Add("commodore_plus4", "66");
-            //systemNameToIdMap.Add("Apple IIgs", "86");
-            //systemNameToIdMap.Add("Apple III", "86");
-            //systemNameToIdMap.Add("Nintendo Game & Watch", "52");
-            //systemNameToIdMap.Add("Nintendo 64DD", "14");
-            //systemNameToIdMap.Add("Nintendo Satellaview", "2");
-            //systemNameToIdMap.Add("Nintendo Sufami Turbo", "2");
-            //systemNameToIdMap.Add("PC Engine SuperGrafx", "5");
-
-
-            //systemIdToNameMap.Add("Mame 2003 Plus", "75");
         }
     }
 
     public static class GameInfoExtensions
     {
+        private static string? GetRomPath(this Game gameInfo)
+        {
+            return gameInfo.Roms[0]?.Path;
+        }
+        
         public static bool HasRomFile(this Game gameInfo)
         {
-            return File.Exists(gameInfo.Roms[0]?.Path);
+            return File.Exists(gameInfo.GetRomPath());
         }
 
         public static long GetRomFileSize(this Game gameInfo)
         {
-            if (gameInfo.Roms[0]?.Path == null) return 0;
-
+            var romPath = gameInfo.GetRomPath();
+            if (romPath == null) return 0;
             try
             {
-                return new FileInfo(gameInfo.Roms[0]?.Path).Length;
+                return new FileInfo(romPath).Length;
             }
             catch (IOException)
             {
@@ -217,8 +187,10 @@ namespace ScreenScraperMetadata.Services
 
         public static string GetRomMd5Hash(this Game gameInfo)
         {
+            var romPath = gameInfo.GetRomPath();
+            if (romPath == null) return "";
             using var md5 = MD5.Create();
-            using var stream = File.OpenRead(gameInfo.Roms[0].Path);
+            using var stream = File.OpenRead(romPath);
             var bytes = md5.ComputeHash(stream);
             return BitConverter.ToString(bytes).Replace("-", "");
         }

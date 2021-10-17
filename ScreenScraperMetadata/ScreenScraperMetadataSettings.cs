@@ -18,6 +18,10 @@ namespace ScreenScraperMetadata
         public bool ShouldUseGameLogosAsIcon { get; set; } = false;
 
         public bool ShouldAutoDetectRegion { get; set; } = true;
+        
+        public bool ShouldUseMd5Hash { get; set; } = true;
+
+        public bool ShouldUsePlayniteGameName { get; set; } = false;
 
         public enum BackgroundPreferenceEnum
         {
@@ -54,15 +58,16 @@ namespace ScreenScraperMetadata
             var savedSettings = plugin.LoadPluginSettings<ScreenScraperMetadataSettings>();
 
             // LoadPluginSettings returns null if not saved data is available.
-            if (savedSettings != null)
-            {
-                Username = savedSettings.Username;
-                RegionPreferences = savedSettings.RegionPreferences;
-                Password = savedSettings.Password;
-                BackgroundPreference = savedSettings.BackgroundPreference;
-                ShouldUseGameLogosAsIcon = savedSettings.ShouldUseGameLogosAsIcon;
-                ShouldAutoDetectRegion = savedSettings.ShouldAutoDetectRegion;
-            }
+            if (savedSettings == null) return;
+            
+            Username = savedSettings.Username;
+            RegionPreferences = savedSettings.RegionPreferences;
+            Password = savedSettings.Password;
+            BackgroundPreference = savedSettings.BackgroundPreference;
+            ShouldUseGameLogosAsIcon = savedSettings.ShouldUseGameLogosAsIcon;
+            ShouldAutoDetectRegion = savedSettings.ShouldAutoDetectRegion;
+            ShouldUseMd5Hash = savedSettings.ShouldUseMd5Hash;
+            ShouldUsePlayniteGameName = savedSettings.ShouldUsePlayniteGameName;
         }
 
         public void BeginEdit()
