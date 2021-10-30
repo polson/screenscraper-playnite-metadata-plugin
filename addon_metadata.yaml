@@ -1,0 +1,10 @@
+AddonId: ScreenScraperMetadata_7f06b81a-3271-44ee-a234-b32fc15c42f1
+Packages:
+  - Version: 2.0
+    RequiredApiVersion: 6.0.0
+    ReleaseDate: 2021-10-17
+    PackageUrl: https://github.com/Lacro59/playnite-metadatalocal-plugin/releases/download/v2.0/playnite-metadatalocal-plugin_2_0.pext
+    Changelog:
+      - Playnite 9 support (thanks @ferrazpedro!)
+      - New setting to toggle MD5 hashing
+      - New setting to use Playnite game name for matching instead of ROM filename
