@@ -3,7 +3,7 @@ Packages:
   - Version: 2.0
     RequiredApiVersion: 6.0.0
     ReleaseDate: 2021-10-17
-    PackageUrl: https://github.com/Lacro59/playnite-metadatalocal-plugin/releases/download/v2.0/playnite-metadatalocal-plugin_2_0.pext
+    PackageUrl: https://github.com/polson/screenscraper-playnite-metadata-plugin/releases/download/v2.0/ScreenScraper.fr_Metadata_Provider_2_0.pext
     Changelog:
       - Playnite 9 support (thanks @ferrazpedro!)
       - New setting to toggle MD5 hashing
