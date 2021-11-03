@@ -18,6 +18,7 @@ namespace ScreenScraperMetadata.Services
         private readonly ScreenScraperMetadataSettings settings;
         private Dictionary<string, string> systemIdToNameMap = new();
         private Dictionary<string, string> systemNameToIdMap = new();
+        private Dictionary<string, string> arcadeNameToIdMap = new();
 
         public ScreenScraperServiceClient(ScreenScraperMetadataSettings settings)
         {
@@ -49,6 +50,12 @@ namespace ScreenScraperMetadata.Services
             if (specificationId != null)
             {
                 systemNameToIdMap.TryGetValue(specificationId, out var systemId);
+                if (systemId != null) request.AddParameter("systemeid", systemId);
+            }
+            else
+            {
+                var platformName = gameInfo.Platforms[0].Name;
+                arcadeNameToIdMap.TryGetValue(platformName, out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
 
@@ -150,6 +157,12 @@ namespace ScreenScraperMetadata.Services
 
             //Add extra names
             systemNameToIdMap.Add("commodore_plus4", "66");
+
+            arcadeNameToIdMap = new Dictionary<string, string>
+            {
+                { "Arcade", "75" },
+                { "MAME", "75" }
+            };
         }
     }
 
