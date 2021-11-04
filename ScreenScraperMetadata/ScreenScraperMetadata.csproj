@@ -59,6 +59,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Models\JeuInfo.cs" />
     <Compile Include="ScreenScraperMetadata.cs" />
     <Compile Include="ScreenScraperMetadataProvider.cs" />
