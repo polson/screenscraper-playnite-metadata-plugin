@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Playnite.SDK;
 using Playnite.SDK.Models;
 using RestSharp;
+using ScreenScraperMetadata.Extensions;
 using ScreenScraperMetadata.Models;
 
 namespace ScreenScraperMetadata.Services
@@ -16,8 +16,8 @@ namespace ScreenScraperMetadata.Services
         private const string BaseUrl = @"https://www.screenscraper.fr/api2/";
         private readonly RestClient client = new(BaseUrl);
         private readonly ScreenScraperMetadataSettings settings;
-        private Dictionary<string, string> systemIdToNameMap = new();
         private Dictionary<string, string> systemNameToIdMap = new();
+        private Dictionary<string, string> arcadeNameToIdMap = new();
 
         public ScreenScraperServiceClient(ScreenScraperMetadataSettings settings)
         {
@@ -49,6 +49,12 @@ namespace ScreenScraperMetadata.Services
             if (specificationId != null)
             {
                 systemNameToIdMap.TryGetValue(specificationId, out var systemId);
+                if (systemId != null) request.AddParameter("systemeid", systemId);
+            }
+            else
+            {
+                var platformName = gameInfo.Platforms[0].Name.Sanitize();
+                arcadeNameToIdMap.TryGetValue(platformName, out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
 
@@ -99,6 +105,7 @@ namespace ScreenScraperMetadata.Services
                 { "bandai_wonderswan_color", "46" },
                 { "coleco_vision", "48" },
                 { "commodore_64", "66" },
+                { "commodore_plus4", "66" },
                 { "commodore_amiga", "64" },
                 { "commodore_amiga_cd32", "130" },
                 { "commodore_vci20", "73" },
@@ -145,11 +152,14 @@ namespace ScreenScraperMetadata.Services
                 { "xbox360", "33" }
             };
 
-            systemIdToNameMap =
-            systemNameToIdMap.ToDictionary(kv => kv.Value, kv => kv.Key);
-
-            //Add extra names
-            systemNameToIdMap.Add("commodore_plus4", "66");
+            arcadeNameToIdMap = new Dictionary<string, string>
+            {
+                { "arcade", "75" },
+                { "mame", "75" },
+                { "naomi", "56" },
+                { "naomi2", "230" },
+                { "atomiswave", "53" }
+            };
         }
     }
 
