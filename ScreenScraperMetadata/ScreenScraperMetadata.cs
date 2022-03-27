@@ -21,13 +21,13 @@ namespace ScreenScraperMetadata
 
         public override List<MetadataField> SupportedFields { get; } = new()
         {
+            MetadataField.Name,
             MetadataField.CoverImage,
             MetadataField.BackgroundImage,
             MetadataField.Description,
             MetadataField.Developers,
             MetadataField.Genres,
             MetadataField.Icon,
-            MetadataField.Name,
             MetadataField.Platform,
             MetadataField.Publishers,
             MetadataField.ReleaseDate,
@@ -35,7 +35,6 @@ namespace ScreenScraperMetadata
             MetadataField.CriticScore
         };
 
-        // Change to something more appropriate
         public override string Name => "ScreenScraper.fr";
 
         public override OnDemandMetadataProvider GetMetadataProvider(MetadataRequestOptions options)

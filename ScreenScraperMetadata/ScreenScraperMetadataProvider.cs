@@ -332,7 +332,7 @@ namespace ScreenScraperMetadata
         
         private string? GetRomPath()
         {
-            return options.GameData.Roms[0]?.Path;
+            return options.GameData.Roms?.FirstOrDefault()?.Path;
         }
 
         private bool HasRomFile()
