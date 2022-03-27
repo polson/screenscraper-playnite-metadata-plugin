@@ -22,7 +22,6 @@ namespace ScreenScraperMetadata
         private readonly ScreenScraperMetadataSettings settings;
         private readonly Jeu? ssGameInfo;
         private string PreferredLanguage => plugin.PlayniteApi.ApplicationSettings.Language;
-        string box = "box-2D";
 
         public ScreenScraperMetadataProvider(MetadataRequestOptions options, ScreenScraperMetadata plugin,
             ScreenScraperMetadataSettings settings)
@@ -40,10 +39,7 @@ namespace ScreenScraperMetadata
 
         public override MetadataFile? GetCoverImage(GetMetadataFieldArgs args)
         {
-            if (settings.ShouldUse3dBox)
-            {
-                box = "box-3D";
-            }
+            var box = settings.ShouldUse3dBox ? "box-3D" : "box-2D";
             var media = FindMediaItems(box).FirstOrDefault();
             return DownloadToMetadataFile(media);
         }
