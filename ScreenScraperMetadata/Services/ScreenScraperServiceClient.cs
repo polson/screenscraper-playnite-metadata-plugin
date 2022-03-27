@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Playnite.SDK;
@@ -34,7 +35,6 @@ namespace ScreenScraperMetadata.Services
                 .AddParameter("sspassword", settings.Password)
                 .AddParameter("softname", "SuperScraper-0.1")
                 .AddParameter("output", "json");
-
             if (settings.ShouldUsePlayniteGameName)
             {
                 request.AddParameter("romnom", gameInfo.Name);
@@ -45,7 +45,7 @@ namespace ScreenScraperMetadata.Services
                 request.AddParameter("romtaille", gameInfo.GetRomFileSize());
             }
 
-            var specificationId = gameInfo.Platforms?[0]?.SpecificationId;
+            var specificationId = gameInfo.Platforms?.FirstOrDefault()?.SpecificationId;
             if (specificationId != null)
             {
                 systemNameToIdMap.TryGetValue(specificationId, out var systemId);
@@ -53,7 +53,7 @@ namespace ScreenScraperMetadata.Services
             }
             else
             {
-                var platformName = gameInfo.Platforms[0].Name.Sanitize();
+                var platformName = gameInfo.Platforms?.FirstOrDefault()?.Name.Sanitize() ?? "";
                 arcadeNameToIdMap.TryGetValue(platformName, out var systemId);
                 if (systemId != null) request.AddParameter("systemeid", systemId);
             }
@@ -66,7 +66,6 @@ namespace ScreenScraperMetadata.Services
                     request.AddParameter("md5", gameInfo.GetRomMd5Hash());
                 }
             }
-
             var response = client.Execute<JeuInfo>(request);
             try
             {
@@ -167,7 +166,7 @@ namespace ScreenScraperMetadata.Services
     {
         private static string? GetRomPath(this Game gameInfo)
         {
-            return gameInfo.Roms[0]?.Path;
+            return gameInfo.Roms?.FirstOrDefault()?.Path;
         }
         
         public static bool HasRomFile(this Game gameInfo)
