@@ -23,6 +23,8 @@ namespace ScreenScraperMetadata
 
         public bool ShouldUsePlayniteGameName { get; set; } = false;
 
+        public bool ShouldUse3dBox { get; set; } = false;
+
         public enum BackgroundPreferenceEnum
         {
             Fanart,
@@ -68,6 +70,7 @@ namespace ScreenScraperMetadata
             ShouldAutoDetectRegion = savedSettings.ShouldAutoDetectRegion;
             ShouldUseMd5Hash = savedSettings.ShouldUseMd5Hash;
             ShouldUsePlayniteGameName = savedSettings.ShouldUsePlayniteGameName;
+            ShouldUse3dBox = savedSettings.ShouldUse3dBox;
         }
 
         public void BeginEdit()

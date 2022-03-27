@@ -27,6 +27,9 @@
         <CheckBox
             IsChecked="{Binding ShouldAutoDetectRegion}"
             Margin="0,10,0,0">Auto-detect region from ROM filename when possible</CheckBox>
+        <CheckBox
+            IsChecked="{Binding ShouldUse3dBox}"
+            Margin="0,15,0,0">Use 3D Box Art</CheckBox>
         <TextBlock
             Text="Background image preferences"
             Margin="0,15,0,0" />
