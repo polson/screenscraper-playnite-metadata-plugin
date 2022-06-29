@@ -21,6 +21,8 @@ namespace ScreenScraperMetadata
         
         public bool ShouldUseMd5Hash { get; set; } = true;
 
+        public bool ShouldUseDefaultLanguage { get; set; } = false;
+
         public bool ShouldUsePlayniteGameName { get; set; } = false;
 
         public bool ShouldUse3dBox { get; set; } = false;
