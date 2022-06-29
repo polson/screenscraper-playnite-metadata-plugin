@@ -46,6 +46,9 @@
             IsChecked="{Binding ShouldUseMd5Hash}"
             Margin="0,15,0,0">Use MD5 hash for improved matching</CheckBox>
         <CheckBox
+            IsChecked="{Binding ShouldUseDefaultLanguage}"
+            Margin="0,15,0,0">Use English as the default language to search metadata</CheckBox>
+        <CheckBox
             IsChecked="{Binding ShouldUsePlayniteGameName}"
             Margin="0,15,0,0">Use Playnite name instead of ROM name for matching</CheckBox>
     </StackPanel>

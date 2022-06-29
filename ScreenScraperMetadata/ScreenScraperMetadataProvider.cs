@@ -21,7 +21,7 @@ namespace ScreenScraperMetadata
         private readonly ScreenScraperServiceClient service;
         private readonly ScreenScraperMetadataSettings settings;
         private readonly Jeu? ssGameInfo;
-        private string PreferredLanguage => plugin.PlayniteApi.ApplicationSettings.Language;
+        private string PreferredLanguage;
 
         public ScreenScraperMetadataProvider(MetadataRequestOptions options, ScreenScraperMetadata plugin,
             ScreenScraperMetadataSettings settings)
@@ -29,6 +29,16 @@ namespace ScreenScraperMetadata
             this.options = options;
             this.plugin = plugin;
             this.settings = settings;
+
+            if (settings.ShouldUseDefaultLanguage)
+            {
+                PreferredLanguage = "en_US";
+            }
+            else
+            {
+                PreferredLanguage = plugin.PlayniteApi.ApplicationSettings.Language;
+            }
+
             service = new ScreenScraperServiceClient(settings);
             ssGameInfo = service.GetJeuInfo(options.GameData)?.response.jeu;
             AvailableFields = GetAvailableFields();
